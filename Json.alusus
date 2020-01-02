@@ -1,0 +1,219 @@
+import "Srl/Console.alusus";
+import "Srl/Array.alusus";
+import "Srl/String.alusus";
+
+type Json {
+    use Srl;
+    def jsonString: String = "";
+    def keysArray: Array[String];
+    def valuesArray: Array[String];
+
+    handler this~init(str: String) {
+        this.jsonString = str.trim();
+        if this.jsonString.find(",") == -1 {
+            this.parse(this.jsonString.slice(1, this.jsonString.getLength() - 2));
+        } else {
+            this.parseAll();
+        }
+    };
+
+    handler this~init(json: ref[Json]) {
+        this = json.jsonString
+        this.keysArray = json.keysArray
+        this.valuesArray = json.valuesArray
+    }
+
+    func parse(string: String) {
+        if this.isObject() {
+            def skipOperators: Array[Char];
+            def splitArray: Array[String] = this.splitString(string, ':', skipOperators);
+            this.keysArray.add(this.removeQuotes(splitArray(0).trim()));
+            this.valuesArray.add(string.slice(splitArray(0).getLength() + 1, string.getLength()-1).trim());
+        } else if this.isArray() {
+            this.valuesArray.add(string.trim());
+        }
+    }
+
+    func parseAll {
+        def skipOperators: Array[Char];
+        skipOperators.add('{')
+        skipOperators.add('}')
+        skipOperators.add('[')
+        skipOperators.add(']')
+        def index: int;
+        def splitArray: Array[String] = this.splitString(this.jsonString.slice(1, this.jsonString.getLength() - 2), ',', skipOperators);
+        for index=0, index < splitArray.getLength(), index++ {
+            this.parse(splitArray(index));
+        };
+    }
+
+    func splitString(str: String, splitOperator: Char, skipOperators: Array[Char]): Array[String] {
+        def arr: Array[String];
+        def tempString: String = "";
+        def skip: Int = 0;
+
+        def index: int;
+        for index=0, index<str.getLength(), index++ {
+            def opInd: int;
+            for opInd=0, opInd<skipOperators.getLength(), opInd++ {
+                if str(index) == skipOperators(opInd)
+                    if opInd % 2 == 0
+                        skip++
+                    else
+                        skip--
+            };
+
+            if str(index) == splitOperator && skip <= 0 {
+                arr.add(tempString);
+                tempString = "";
+            } else
+                tempString += str(index);
+        };
+
+        if tempString.getLength() > 0 {
+            arr.add(tempString)
+        }
+
+        return arr;
+    };
+
+    func isQuotes(string: String): bool {
+        if string(0) == string(string.getLength() -1) && string(0) == '"' || string(0) == '\''
+        return true
+        return false
+    }
+
+    func hasQuotes(stringWithQuotes: String): Bool {
+        def stringWithoutQuotes: String = stringWithQuotes
+        if stringWithoutQuotes(0) == stringWithoutQuotes(stringWithoutQuotes.getLength() -1) && (stringWithoutQuotes(0) == '"' || stringWithoutQuotes(0) == '\'') {
+            return true
+        } else if (((stringWithoutQuotes(0) == '"' || stringWithoutQuotes(0) == '\'') && stringWithoutQuotes(0) != stringWithoutQuotes(stringWithoutQuotes.getLength() -1)) || ((stringWithoutQuotes(stringWithoutQuotes.getLength() -1) == '"' || stringWithoutQuotes(stringWithoutQuotes.getLength() -1) == '\'') && stringWithoutQuotes(0) != stringWithoutQuotes(stringWithoutQuotes.getLength() -1))) {
+            // ERROR: "UNEXPECTED TOKEN" or "UNCOMPLATE QUOTATION"
+            // Console.print("\t%s%s%s UNEXPECTED TOKEN %s\t\n", Console.Style.BG_RED, Console.Style.FG_WHITE, Console.Style.BLINK, Console.Style.RESET)
+            return false
+        }
+            
+        return false;
+    }
+
+    func removeQuotes(stringWithQuotes: String): String {
+        if this.hasQuotes(stringWithQuotes) {
+            stringWithQuotes = stringWithQuotes.slice(1, stringWithQuotes.getLength() - 2);
+        }
+
+        return stringWithQuotes;
+    }
+
+    func removeQuotes(stringWithQuotes: ptr[array[Char]]): String {
+        def str: String = stringWithQuotes;
+        return this.removeQuotes(str);
+    }
+
+    func isObject(): bool {
+        if this.jsonString.getLength() != 0
+        if this.jsonString(0) == '{' && this.jsonString(this.jsonString.getLength() -1) == '}'
+        return true;
+        return false;
+    }
+
+    func isArray(): bool {
+        if this.jsonString.getLength() != 0
+        if this.jsonString(0) == '[' && this.jsonString(this.jsonString.getLength() -1) == ']'
+        return true;
+        return false;
+    }
+
+    func get(key: ptr[array[Char]]): String {
+        def result: String;
+
+        def index: int = 0;
+        for, index < this.keysArray.getLength(), index++ {
+            if this.keysArray(index) == key {
+                result = this.valuesArray(index);
+            }
+        }
+        
+        return result;
+    }
+
+    func get(index: Int): String {
+        def result: String = this.valuesArray(index);
+        return result;
+    }
+
+    func getString(key: ptr[array[Char]]): String {
+        def str: String = this.get(key);
+        return this.removeQuotes(str);
+    }
+
+    func getString(index: Int): String {
+        def str: String = this.get(index);
+        return this.removeQuotes(str);
+    }
+
+    func getObject(key: ptr[array[Char]]): Json {
+        def obj: Json = this.get(key);
+        return obj;
+    }
+
+    func getObject(index: Int): Json {
+        def obj: Json = this.get(index);
+        return obj;
+    }
+
+    func getInt(key: ptr[array[Char]]): Int {
+        def obj: Int;
+        String.scan(this.get(key), "%d", obj~ptr);
+        return obj;
+    }
+
+    func getInt(index: Int): Int {
+        def obj: Int;
+        String.scan(this.get(index), "%d", obj~ptr);
+        return obj;
+    }
+
+    func getFloat(key: ptr[array[Char]]): Float {
+        def obj: Float;
+        String.scan(this.get(key), "%f", obj~ptr);
+        return obj
+    }
+
+    func getFloat(index: Int): Float {
+        def obj: Float;
+        String.scan(this.get(index), "%f", obj~ptr);
+        return obj
+    }
+
+    func getBool(key: ptr[array[Char]]): Bool {
+        def boolean: Bool;
+
+        if this.get(key).toLowerCase() == "true"
+            return true
+        else if this.get(key).toLowerCase() == "false"
+            return false 
+    }
+
+    func getBool(index: Int): Bool {
+        def boolean: Bool;
+
+        if this.get(index).toLowerCase() == "true"
+            return true
+        else if this.get(index).toLowerCase() == "false"
+            return false 
+    }
+
+    /* TODO: if json is valid return true or false if it isn't valid
+    func isValid(): Bool {
+        return ?
+    }*/
+
+    handler this = ptr[array[Char]] {
+        def json: String = value;
+        this~init(json);
+    }
+
+    handler this = String {
+        this~init(value);
+    }
+}
