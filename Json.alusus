@@ -4,7 +4,7 @@ import "Srl/String.alusus";
 
 type Json {
     use Srl;
-    def jsonString: String = "";
+    def jsonString: String;
     def keysArray: Array[String];
     def valuesArray: Array[String];
 
@@ -15,7 +15,9 @@ type Json {
         } else {
             this.parseAll();
         }
-    };
+    }
+
+    handler this~init(str: ptr[array[Char]]) this = str 
 
     handler this~init(json: ref[Json]) {
         this = json.jsonString
@@ -26,9 +28,13 @@ type Json {
     func parse(string: String) {
         if this.isObject() {
             def skipOperators: Array[Char];
+            skipOperators.add('{')
+            skipOperators.add('}')
+            skipOperators.add('[')
+            skipOperators.add(']')
             def splitArray: Array[String] = this.splitString(string, ':', skipOperators);
             this.keysArray.add(this.removeQuotes(splitArray(0).trim()));
-            this.valuesArray.add(string.slice(splitArray(0).getLength() + 1, string.getLength()-1).trim());
+            this.valuesArray.add(splitArray(1).trim());
         } else if this.isArray() {
             this.valuesArray.add(string.trim());
         }
@@ -191,7 +197,8 @@ type Json {
         if this.get(key).toLowerCase() == "true"
             return true
         else if this.get(key).toLowerCase() == "false"
-            return false 
+            return false
+        return false
     }
 
     func getBool(index: Int): Bool {

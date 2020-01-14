@@ -1,5 +1,5 @@
 # Json
-Support module for Common Gateway Interface (CGI) scripts.
+Json Deserializer for Alusus Language
 
 # How to Import
 ```

@@ -1,0 +1,11 @@
+import "Srl/Console.alusus";
+import "../Json.alusus";
+
+use Srl
+func start {
+    def obj: Json = "{\n\t\"success\": true,\n\t\"challenge_ts\": \"2020-01-14T17ZT\",\n\t\"hostname\": \"localhost\"\n}"
+
+    Console.print("key: %s \t\t\t value: %s\n", obj.keysArray(0).buf, obj.valuesArray(0).buf)
+    Console.print("key: %s \t\t\t value: %s\n", obj.keysArray(1).buf, obj.valuesArray(1).buf)
+    Console.print("key: %s \t\t\t value: %s\n", obj.keysArray(2).buf, obj.valuesArray(2).buf)
+} start()
