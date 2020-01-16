@@ -32,6 +32,10 @@ type Json {
             skipOperators.add('}')
             skipOperators.add('[')
             skipOperators.add(']')
+            skipOperators.add('"')
+            skipOperators.add('"')
+            skipOperators.add('\'')
+            skipOperators.add('\'')
             def splitArray: Array[String] = this.splitString(string, ':', skipOperators);
             this.keysArray.add(this.removeQuotes(splitArray(0).trim()));
             this.valuesArray.add(splitArray(1).trim());
@@ -46,6 +50,10 @@ type Json {
         skipOperators.add('}')
         skipOperators.add('[')
         skipOperators.add(']')
+        skipOperators.add('"')
+        skipOperators.add('"')
+        skipOperators.add('\'')
+        skipOperators.add('\'')
         def index: int;
         def splitArray: Array[String] = this.splitString(this.jsonString.slice(1, this.jsonString.getLength() - 2), ',', skipOperators);
         for index=0, index < splitArray.getLength(), index++ {
