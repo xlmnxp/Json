@@ -38,7 +38,7 @@ type Json {
             skipOperators.add('\'')
             def splitArray: Array[String] = this.splitString(string, ':', skipOperators);
             this.keysArray.add(this.removeQuotes(splitArray(0).trim()));
-            this.valuesArray.add(splitArray(1).trim());
+            this.valuesArray.add(string.slice(splitArray(0).getLength() + 1, string.getLength()-1).trim());
         } else if this.isArray() {
             this.valuesArray.add(string.trim());
         }
