@@ -80,6 +80,10 @@ return true only when json is Object
 ```
 return true only when json is Array
 ```
+- Json.**getLength()**: Int<br>
+```
+return length of Children 
+```
 
 - Json.**hasQuotes(stringWithQuotes: String)**: Bool<br>
 

@@ -137,6 +137,10 @@ type Json {
         return false;
     }
 
+    func getLength(): Int {
+        return this.valuesArray.getLength();
+    }
+
     func get(key: ptr[array[Char]]): String {
         def result: String;
 
