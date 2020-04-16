@@ -20,7 +20,7 @@ type Json {
     handler this~init(str: ptr[array[Char]]) this = str 
 
     handler this~init(json: ref[Json]) {
-        this = json.jsonString
+        this.jsonString = json.jsonString
         this.keysArray = json.keysArray
         this.valuesArray = json.valuesArray
     }
@@ -234,5 +234,11 @@ type Json {
 
     handler this = String {
         this~init(value);
+    }
+
+    handler this = ref[Json] {
+        this.jsonString = value.jsonString
+        this.keysArray = value.keysArray
+        this.valuesArray = value.valuesArray
     }
 }
