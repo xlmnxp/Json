@@ -8,6 +8,9 @@ type Json {
     def keysArray: Array[String];
     def valuesArray: Array[String];
 
+    handler this~init() {
+    }
+
     handler this~init(str: String) {
         this.jsonString = str.trim();
         if this.jsonString.find(",") == -1 {
@@ -17,7 +20,7 @@ type Json {
         }
     }
 
-    handler this~init(str: ptr[array[Char]]) this = str 
+    handler this~init(str: ptr[array[Char]]) this = str
 
     handler this~init(json: ref[Json]) {
         this.jsonString = json.jsonString
@@ -106,7 +109,7 @@ type Json {
             // Console.print("\t%s%s%s UNEXPECTED TOKEN %s\t\n", Console.Style.BG_RED, Console.Style.FG_WHITE, Console.Style.BLINK, Console.Style.RESET)
             return false
         }
-            
+
         return false;
     }
 
@@ -150,7 +153,7 @@ type Json {
                 result = this.valuesArray(index);
             }
         }
-        
+
         return result;
     }
 
@@ -219,7 +222,7 @@ type Json {
         if this.get(index).toLowerCase() == "true"
             return true
         else if this.get(index).toLowerCase() == "false"
-            return false 
+            return false
     }
 
     /* TODO: if json is valid return true or false if it isn't valid
