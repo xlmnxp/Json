@@ -183,27 +183,19 @@ type Json {
     }
 
     func getInt(key: ptr[array[Char]]): Int {
-        def obj: Int;
-        String.scan(this.get(key), "%d", obj~ptr);
-        return obj;
+        return String.parseInt(this.get(key));
     }
 
     func getInt(index: Int): Int {
-        def obj: Int;
-        String.scan(this.get(index), "%d", obj~ptr);
-        return obj;
+        return String.parseInt(this.get(index));
     }
 
     func getFloat(key: ptr[array[Char]]): Float {
-        def obj: Float;
-        String.scan(this.get(key), "%f", obj~ptr);
-        return obj
+        return String.parseFloat(this.get(key));
     }
 
     func getFloat(index: Int): Float {
-        def obj: Float;
-        String.scan(this.get(index), "%f", obj~ptr);
-        return obj
+        return String.parseFloat(this.get(index));
     }
 
     func getBool(key: ptr[array[Char]]): Bool {
