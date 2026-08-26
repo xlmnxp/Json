@@ -1,0 +1,56 @@
+import "Srl/Console.alusus";
+import "Srl/Array.alusus";
+import "Srl/String.alusus";
+import "Json.alusus";
+
+
+عرف جـيسون: لقب Json؛
+@دمج صنف جـيسون{
+
+
+    عرف نص_جيسون: لقب jsonString؛
+
+    عرف مفاتيح_المصفوفة: لقب keysArray؛
+
+    عرف مصفوفة_القيم: لقب valuesArray؛
+
+
+   
+عرف اقرأ: لقب parse؛
+  
+  
+  عرف اقرأ_للكل: لقب parseAll؛
+
+   
+
+عرف نص_إسكيولايت: لقب splitString؛
+   
+
+عرف يقتبس: لقب اقتباسات؛
+  
+عرف أقتبس: لقب hasQuotes؛
+
+    
+عرف ازل_الاقتباس: لقب removeQuotes؛
+
+  
+عرف الكائن: لقب isObject؛
+عرف المصفوفة: لقب isArray؛
+  
+عرف هات_الطول: لقب getLength؛
+  
+عرف هات: لقب get؛
+  
+ 
+عرف أدخل_محارف: لقب getString؛
+ 
+  
+   عرف أدخل_الكائن: لقب getObject؛
+  
+  عرف أدخل_صحيح: لقب getInt؛
+
+  
+عرف أدخل_عائم: لقب getFloat؛
+  
+عرف ادخل_قيمة_منطقية: لقب getBool؛
+   }

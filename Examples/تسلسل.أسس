@@ -1,0 +1,11 @@
+import "Srl/Console.alusus"
+
+
+اشمل "مـتم/طـرفية.أسس"؛
+اشمل "../جيسون.أسس"؛
+
+
+
+
+عرف كائن_جيسون: جـيسون = "{\"glossary\": {\"title\": \"example glossary\",\"GlossDiv\": {\"title\": \"S\", \"GlossList\": {\"GlossEntry\": {\"ID\": \"SGML\",	\"SortAs\": \"SGML\", \"GlossTerm\": \"Standard Generalized Markup Language\", \"Acronym\": \"SGML\", \"Abbrev\": \"ISO 8879:1986\", \"GlossDef\": {\"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\"GlossSeeAlso\": [\"GML\", \"XML\"]}, \"GlossSee\": \"markup\"}}}}}";
+مـتم.طـرفية.اطبع(كائن_جيسون.أدخل_الكائن("glossary").أدخل_الكائن("GlossDiv").أدخل_الكائن("GlossList").أدخل_الكائن("GlossEntry").أدخل_الكائن("GlossDef").أدخل_الكائن("GlossSeeAlso").أدخل_محارف(1)); // output: XML
