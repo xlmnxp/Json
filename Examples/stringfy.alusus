@@ -1,0 +1,44 @@
+import "Spp";
+import "Spp/Ast";
+import "Srl/String";
+import "Srl/Console";
+import "Srl/Array";
+import "Srl/Map";
+import "Srl/Memory";
+import "Srl/Nullable";
+import "Apm";
+Apm.importPackage("Alusus/Json@0.2");
+
+use Srl;
+use Spp;
+
+class Person {
+    def name : Nullable[String];
+    def tags : Array[Nullable[String]];
+    def scores : Map[String, Nullable[String]];
+    def data : Map[String, Array[Nullable[String]]];
+    def scoresByRound : Array[Map[String, Nullable[String]]];
+}
+
+def person : Person();
+person.name = Nullable[String](String("Sarmed"));
+
+person.tags.add(Nullable[String](String("admin")));
+
+person.scores.set(String("math"), Nullable[String](String("A")));
+
+def langs : Array[Nullable[String]];
+langs.add(Nullable[String](String("Alusus")));
+langs.add(Nullable[String](String("C++")));
+person.data.set(String("languages"), langs);
+
+def round1 : Map[String, Nullable[String]];
+round1.set(String("math"), Nullable[String](String("A")));
+round1.set(String("art"), Nullable[String]());
+person.scoresByRound.add(round1);
+
+def round2 : Map[String, Nullable[String]];
+round2.set(String("gym"), Nullable[String](String("B")));
+person.scoresByRound.add(round2);
+
+Console.print("%s\n", Json.stringfy[Person](person).buf);

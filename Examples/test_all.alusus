@@ -1,0 +1,40 @@
+import "Srl/System";
+import "Srl/Fs";
+import "Srl/Console";
+import "Srl/Array";
+import "Srl/String";
+
+use Srl;
+
+def files: Array[String]({
+    String("escaping.alusus"),
+    String("print_object.alusus"),
+    String("seek_nested.alusus"),
+    String("json_string_builder.alusus"),
+    String("اطبع_كائن.أسس"),
+    String("وصول_عميق.أسس"),
+    String("ترميز.أسس"),
+    String("منشئ_نص_جيسون.أسس"),
+});
+
+def i: Int;
+for i = 0, i < files.getLength(), ++i {
+    Console.print("Running: %s\n", files(i).buf);
+    if i == 0 {
+        System.exec(String("echo \">>>>>> ") + files(i) + "\\n\" > result.output");
+    } else {
+        System.exec(String("echo \">>>>>> ") + files(i) + "\\n\" >> result.output");
+    }
+    System.exec(String("alusus ") + files(i) + String(" >> result.output"));
+    System.exec("echo \"\\n\\n\" >> result.output");
+}
+
+def received: String = Fs.readFile("result.output");
+def expected: String = Fs.readFile("expected_result.output");
+
+if received == expected {
+    Console.print("Test successful,\n");
+} else {
+    Console.print("Test failed,\n");
+}
+

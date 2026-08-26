@@ -1,0 +1,254 @@
+@merge class Json {
+    function _isSupportedJsonFieldType (varType: ref[Spp.Ast.Type]) : Bool {
+        @shared def nullableStrType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Nullable[Root.Srl.String]));
+        @shared def nullableBoolType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Nullable[Root.Bool]));
+        @shared def nullableInt32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Nullable[Root.Int[32]]));
+        @shared def nullableInt64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Nullable[Root.Int[64]]));
+        @shared def nullableFloat32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Nullable[Root.Float[32]]));
+        @shared def nullableFloat64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Nullable[Root.Float[64]]));
+        @shared def arrNullableStrType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Srl.String]]));
+        @shared def arrNullableBoolType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Bool]]));
+        @shared def arrNullableInt32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Int[32]]]));
+        @shared def arrNullableInt64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Int[64]]]));
+        @shared def arrNullableFloat32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Float[32]]]));
+        @shared def arrNullableFloat64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Float[64]]]));
+        @shared def mapNullableStrType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Srl.String]]));
+        @shared def mapNullableBoolType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Bool]]));
+        @shared def mapNullableInt32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Int[32]]]));
+        @shared def mapNullableInt64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Int[64]]]));
+        @shared def mapNullableFloat32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Float[32]]]));
+        @shared def mapNullableFloat64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Float[64]]]));
+        @shared def mapArrNullableStrType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Srl.String]]]));
+        @shared def mapArrNullableBoolType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Bool]]]));
+        @shared def mapArrNullableInt32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Int[32]]]]));
+        @shared def mapArrNullableInt64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Int[64]]]]));
+        @shared def mapArrNullableFloat32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Float[32]]]]));
+        @shared def mapArrNullableFloat64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Float[64]]]]));
+        @shared def arrMapNullableStrType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Srl.String]]]));
+        @shared def arrMapNullableBoolType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Bool]]]));
+        @shared def arrMapNullableInt32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Int[32]]]]));
+        @shared def arrMapNullableInt64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Int[64]]]]));
+        @shared def arrMapNullableFloat32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Float[32]]]]));
+        @shared def arrMapNullableFloat64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Float[64]]]]));
+        return varType~ptr == nullableStrType~ptr
+            or varType~ptr == nullableBoolType~ptr
+            or varType~ptr == nullableInt32Type~ptr
+            or varType~ptr == nullableInt64Type~ptr
+            or varType~ptr == nullableFloat32Type~ptr
+            or varType~ptr == nullableFloat64Type~ptr
+            or varType~ptr == arrNullableStrType~ptr
+            or varType~ptr == arrNullableBoolType~ptr
+            or varType~ptr == arrNullableInt32Type~ptr
+            or varType~ptr == arrNullableInt64Type~ptr
+            or varType~ptr == arrNullableFloat32Type~ptr
+            or varType~ptr == arrNullableFloat64Type~ptr
+            or varType~ptr == mapNullableStrType~ptr
+            or varType~ptr == mapNullableBoolType~ptr
+            or varType~ptr == mapNullableInt32Type~ptr
+            or varType~ptr == mapNullableInt64Type~ptr
+            or varType~ptr == mapNullableFloat32Type~ptr
+            or varType~ptr == mapNullableFloat64Type~ptr
+            or varType~ptr == mapArrNullableStrType~ptr
+            or varType~ptr == mapArrNullableBoolType~ptr
+            or varType~ptr == mapArrNullableInt32Type~ptr
+            or varType~ptr == mapArrNullableInt64Type~ptr
+            or varType~ptr == mapArrNullableFloat32Type~ptr
+            or varType~ptr == mapArrNullableFloat64Type~ptr
+            or varType~ptr == arrMapNullableStrType~ptr
+            or varType~ptr == arrMapNullableBoolType~ptr
+            or varType~ptr == arrMapNullableInt32Type~ptr
+            or varType~ptr == arrMapNullableInt64Type~ptr
+            or varType~ptr == arrMapNullableFloat32Type~ptr
+            or varType~ptr == arrMapNullableFloat64Type~ptr     }
+    
+    function _getRefWrapperContentType (varType: ref[Spp.Ast.Type]) : ref[Spp.Ast.Type] {
+        if varType.getMyTypeInfo().typeName != "UserType" return nullRef[Spp.Ast.Type];
+        def innerVars: Array[ref[Core.Basic.TiObject]] = Spp.astMgr.getClassVars(varType);
+        def k: Int;
+        for k = 0, k < innerVars.getLength(), ++k {
+            if Spp.astMgr.getDefinitionName(innerVars(k)) == "obj" {
+                def objType: ref[Spp.Ast.Type](Spp.astMgr.traceType(innerVars(k)));
+                if objType.getMyTypeInfo().typeName == "ReferenceType" {
+                    return Spp.astMgr.tryGetDeepReferenceContentType(objType);
+                }
+            }
+        }
+        return nullRef[Spp.Ast.Type];
+    }
+
+    function _generateJsonStringify [T : type] () {
+        @shared def arrNullableStrType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Srl.String]]));
+        @shared def arrNullableBoolType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Bool]]));
+        @shared def arrNullableInt32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Int[32]]]));
+        @shared def arrNullableInt64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Int[64]]]));
+        @shared def arrNullableFloat32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Float[32]]]));
+        @shared def arrNullableFloat64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Nullable[Root.Float[64]]]));
+        @shared def mapNullableStrType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Srl.String]]));
+        @shared def mapNullableBoolType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Bool]]));
+        @shared def mapNullableInt32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Int[32]]]));
+        @shared def mapNullableInt64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Int[64]]]));
+        @shared def mapNullableFloat32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Float[32]]]));
+        @shared def mapNullableFloat64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Float[64]]]));
+        @shared def mapArrNullableStrType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Srl.String]]]));
+        @shared def mapArrNullableBoolType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Bool]]]));
+        @shared def mapArrNullableInt32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Int[32]]]]));
+        @shared def mapArrNullableInt64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Int[64]]]]));
+        @shared def mapArrNullableFloat32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Float[32]]]]));
+        @shared def mapArrNullableFloat64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Map[Root.Srl.String, Root.Srl.Array[Root.Srl.Nullable[Root.Float[64]]]]));
+        @shared def arrMapNullableStrType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Srl.String]]]));
+        @shared def arrMapNullableBoolType: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Bool]]]));
+        @shared def arrMapNullableInt32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Int[32]]]]));
+        @shared def arrMapNullableInt64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Int[64]]]]));
+        @shared def arrMapNullableFloat32Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Float[32]]]]));
+        @shared def arrMapNullableFloat64Type: ref[Spp.Ast.Type](Spp.astMgr.traceType(ast Root.Srl.Array[Root.Srl.Map[Root.Srl.String, Root.Srl.Nullable[Root.Float[64]]]]));
+
+        def vars: Array[ref[Core.Basic.TiObject]] = Spp.astMgr.getClassVars(T~ast);
+
+        def emittedCount: Int = 0;
+        def i: Int;
+        for i = 0, i < vars.getLength(), ++i {
+            
+            def varType: ref[Spp.Ast.Type](Spp.astMgr.traceType(vars(i)));
+            def isRef: Bool(false); 
+            def isWrapperRef: Bool(false);
+
+            if not _isSupportedJsonFieldType(varType) {
+                if varType.getMyTypeInfo().typeName == "ReferenceType" {
+                    varType~ptr = Spp.astMgr.tryGetDeepReferenceContentType(varType)~ptr;
+                    isRef = true;
+                }else {
+                    varType~ptr = _getRefWrapperContentType(varType)~ptr;
+                    if varType~ptr == 0 {
+                        Spp.buildMgr.raiseBuildNotice("SPPH1015", 1, vars(i));
+                        continue;
+                    };
+                    isWrapperRef = true;
+                }
+                if not _isSupportedJsonFieldType(varType) {
+                    Spp.buildMgr.raiseBuildNotice("SPPH1015", 1, vars(i));
+                    continue;
+                }
+            }
+
+            def fieldName: String = Spp.astMgr.getDefinitionName(vars(i));
+
+            if emittedCount > 0 {
+               Spp.astMgr.insertAst(ast sb.append(','));
+            }
+
+            def valueAst: SrdRef[Core.Basic.TiObject];
+
+            if varType~ptr == arrNullableStrType~ptr
+            or varType~ptr == arrNullableBoolType~ptr
+            or varType~ptr == arrNullableInt32Type~ptr
+            or varType~ptr == arrNullableInt64Type~ptr
+            or varType~ptr == arrNullableFloat32Type~ptr
+            or varType~ptr == arrNullableFloat64Type~ptr
+            or varType~ptr == arrMapNullableStrType~ptr
+            or varType~ptr == arrMapNullableBoolType~ptr
+            or varType~ptr == arrMapNullableInt32Type~ptr
+            or varType~ptr == arrMapNullableInt64Type~ptr
+            or varType~ptr == arrMapNullableFloat32Type~ptr
+            or varType~ptr == arrMapNullableFloat64Type~ptr {
+                if isWrapperRef {
+                    Spp.astMgr.buildAst(
+                        (ast sb.appendJsonValue(obj.varName.obj)),
+                        Map[Srl.String, ref[Core.Basic.TiObject]]().set(String("varName"), Core.Data.Ast.Identifier(fieldName)),
+                        valueAst
+                    );
+                } else {
+                    Spp.astMgr.buildAst(
+                        (ast sb.appendJsonValue(obj.varName)),
+                        Map[Srl.String, ref[Core.Basic.TiObject]]().set(String("varName"), Core.Data.Ast.Identifier(fieldName)),
+                        valueAst
+                    );
+                }
+            } else if varType~ptr == mapNullableStrType~ptr
+            or varType~ptr == mapNullableBoolType~ptr
+            or varType~ptr == mapNullableInt32Type~ptr
+            or varType~ptr == mapNullableInt64Type~ptr
+            or varType~ptr == mapNullableFloat32Type~ptr
+            or varType~ptr == mapNullableFloat64Type~ptr
+            or varType~ptr == mapArrNullableStrType~ptr
+            or varType~ptr == mapArrNullableBoolType~ptr
+            or varType~ptr == mapArrNullableInt32Type~ptr
+            or varType~ptr == mapArrNullableInt64Type~ptr
+            or varType~ptr == mapArrNullableFloat32Type~ptr
+            or varType~ptr == mapArrNullableFloat64Type~ptr {
+                if isWrapperRef {
+                    Spp.astMgr.buildAst(
+                        (ast sb.appendJsonValue(obj.varName.obj)),
+                        Map[Srl.String, ref[Core.Basic.TiObject]]().set(String("varName"), Core.Data.Ast.Identifier(fieldName)),
+                        valueAst
+                    );
+                } else {
+                    Spp.astMgr.buildAst(
+                        (ast sb.appendJsonValue(obj.varName)),
+                        Map[Srl.String, ref[Core.Basic.TiObject]]().set(String("varName"), Core.Data.Ast.Identifier(fieldName)),
+                        valueAst
+                    );
+                }
+            } else {
+                if isWrapperRef {
+                    Spp.astMgr.buildAst(
+                        (ast sb.appendJsonValue(obj.varName.obj)),
+                        Map[Srl.String, ref[Core.Basic.TiObject]]().set(String("varName"), Core.Data.Ast.Identifier(fieldName)),
+                        valueAst
+                    );
+                } else {
+                    Spp.astMgr.buildAst(
+                        (ast sb.appendJsonValue(obj.varName)),
+                        Map[Srl.String, ref[Core.Basic.TiObject]]().set(String("varName"), Core.Data.Ast.Identifier(fieldName)),
+                        valueAst
+                    );
+                }
+            }
+            
+            if isRef or isWrapperRef {
+                if isWrapperRef {
+                    Spp.astMgr.insertAst(
+                        (ast {
+                            sb.format("\"{{key}}\":");
+                            if obj.varName.obj~ptr == 0 {
+                                sb.append("null");
+                            } else {
+                                valueCode
+                            }
+                        }),
+                        Map[Srl.String, ref[Core.Basic.TiObject]]()
+                            .set(String("key"), Core.Basic.TiStr(fieldName))
+                            .set(String("varName"), Core.Data.Ast.Identifier(fieldName))
+                            .set(String("valueCode"), valueAst.obj)
+                    );
+                } else {
+                    Spp.astMgr.insertAst(
+                        (ast {
+                            sb.format("\"{{key}}\":");
+                            if obj.varName~ptr == 0 {
+                                sb.append("null");
+                            } else {
+                                valueCode
+                            }
+                        }),
+                        Map[Srl.String, ref[Core.Basic.TiObject]]()
+                            .set(String("key"), Core.Basic.TiStr(fieldName))
+                            .set(String("varName"), Core.Data.Ast.Identifier(fieldName))
+                            .set(String("valueCode"), valueAst.obj)
+                    );
+                }
+            } else {
+                Spp.astMgr.insertAst(
+                    (ast {
+                        sb.format("\"{{key}}\":");
+                        valueCode
+                    }),
+                    Map[Srl.String, ref[Core.Basic.TiObject]]()
+                        .set(String("key"), Core.Basic.TiStr(fieldName))
+                        .set(String("valueCode"), valueAst.obj)
+                )
+            }
+
+            ++emittedCount;
+        }
+    }
+}

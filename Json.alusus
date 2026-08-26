@@ -1,239 +1,555 @@
-import "Srl/Console.alusus";
 import "Srl/Array.alusus";
 import "Srl/String.alusus";
+import "Srl/StringBuilder.alusus";
+import "Srl/Nullable.alusus";
 
-type Json {
+class Json {
     use Srl;
-    def jsonString: String;
-    def keysArray: Array[String];
-    def valuesArray: Array[String];
+    def keys: Array[String];
+    def values: Array[Json];
+    def rawValue: String;
 
-    handler this~init() {
-    }
+    handler this~init() {}
 
-    handler this~init(str: String) {
-        this.jsonString = str.trim();
-        if this.jsonString.find(",") == -1 {
-            this.parse(this.jsonString.slice(1, this.jsonString.getLength() - 2));
-        } else {
-            this.parseAll();
-        }
-    }
-
-    handler this~init(str: ptr[array[Char]]) this = str
+    handler this~init(str: ptr[array[Char]]) this.initialize(str);
 
     handler this~init(json: ref[Json]) {
-        this.jsonString = json.jsonString
-        this.keysArray = json.keysArray
-        this.valuesArray = json.valuesArray
+        this = json;
     }
 
-    func parse(string: String) {
-        if this.isObject() {
-            def skipOperators: Array[Char];
-            skipOperators.add('{')
-            skipOperators.add('}')
-            skipOperators.add('[')
-            skipOperators.add(']')
-            skipOperators.add('"')
-            skipOperators.add('"')
-            skipOperators.add('\'')
-            skipOperators.add('\'')
-            def splitArray: Array[String] = this.splitString(string, ':', skipOperators);
-            this.keysArray.add(this.removeQuotes(splitArray(0).trim()));
-            this.valuesArray.add(string.slice(splitArray(0).getLength() + 1, string.getLength()-1).trim());
-        } else if this.isArray() {
-            this.valuesArray.add(string.trim());
+    handler this = ptr[array[Char]] this.initialize(value);
+
+    handler this = ref[Json] {
+        this.rawValue = value.rawValue
+        this.keys = value.keys
+        this.values = value.values
+    }
+
+    handler this.initialize(str: CharsPtr) {
+        this.rawValue.clear();
+        this.keys.clear();
+        this.values.clear();
+        this.parse(str);
+    }
+
+    handler this.parse(str: CharsPtr) {
+        while isSpace(str~cnt(0)) str = str + 1;
+        if str~cnt(0) == '{' {
+            str = str + 1;
+            while str~cnt(0) != 0 and str~cnt(0) != '}' {
+                def commaIndex: ArchInt = findSeparator(str, ',');
+                if commaIndex == 0 break;
+                def colonIndex: ArchInt = findSeparator(str, ':');
+                if colonIndex != 0 {
+                    this.keys.add(parseString(str, colonIndex));
+                    this.values.add(Json(str + colonIndex + 1));
+                }
+                str = str + commaIndex;
+                if str~cnt(0) == ',' str = str + 1;
+            }
+        } else if str~cnt(0) == '[' {
+            str = str + 1;
+            while str~cnt(0) != 0 and str~cnt(0) != ']' {
+                def commaIndex: ArchInt = findSeparator(str, ',');
+                if commaIndex == 0 break;
+                this.values.add(Json(str));
+                str = str + commaIndex;
+                if str~cnt(0) == ',' str = str + 1;
+            }
+        } else {
+            def i: ArchInt = 0;
+            def endIndex: ArchInt = 0;
+            def level: Int = 0;
+            while not isAtEnd(str~cnt(i), level, false) {
+                if str~cnt(i) == '\\' { ++i }
+                else if str~cnt(i) == '"' level = 1 - level;
+                if not isSpace(str~cnt(i)) endIndex = i + 1;
+                ++i;
+            }
+            this.rawValue = String(str, endIndex);
         }
     }
 
-    func parseAll {
-        def skipOperators: Array[Char];
-        skipOperators.add('{')
-        skipOperators.add('}')
-        skipOperators.add('[')
-        skipOperators.add(']')
-        skipOperators.add('"')
-        skipOperators.add('"')
-        skipOperators.add('\'')
-        skipOperators.add('\'')
-        def index: int;
-        def splitArray: Array[String] = this.splitString(this.jsonString.slice(1, this.jsonString.getLength() - 2), ',', skipOperators);
-        for index=0, index < splitArray.getLength(), index++ {
-            this.parse(splitArray(index));
-        };
-    }
+    func findSeparator(str: CharsPtr, separator: Char): ArchInt {
+        @shared def skipOperators: Array[Char]({ '{', '[', '"', '\'' });
+        @shared def skipOperatorsClose: Array[Char]({ '}', ']', '"', '\'' });
+        def stack: array[Char, 500];
+        def stackLen: Int = 0;
 
-    func splitString(str: String, splitOperator: Char, skipOperators: Array[Char]): Array[String] {
-        def arr: Array[String];
-        def tempString: String = "";
-        def skip: Int = 0;
-
-        def index: int;
-        for index=0, index<str.getLength(), index++ {
-            def opInd: int;
-            for opInd=0, opInd<skipOperators.getLength(), opInd++ {
-                if str(index) == skipOperators(opInd)
-                    if opInd % 2 == 0
-                        skip++
-                    else
-                        skip--
-            };
-
-            if str(index) == splitOperator && skip <= 0 {
-                arr.add(tempString);
-                tempString = "";
-            } else
-                tempString += str(index);
-        };
-
-        if tempString.getLength() > 0 {
-            arr.add(tempString)
-        }
-
-        return arr;
-    };
-
-    func isQuotes(string: String): bool {
-        if string(0) == string(string.getLength() -1) && string(0) == '"' || string(0) == '\''
-        return true
-        return false
-    }
-
-    func hasQuotes(stringWithQuotes: String): Bool {
-        def stringWithoutQuotes: String = stringWithQuotes
-        if stringWithoutQuotes(0) == stringWithoutQuotes(stringWithoutQuotes.getLength() -1) && (stringWithoutQuotes(0) == '"' || stringWithoutQuotes(0) == '\'') {
-            return true
-        } else if (((stringWithoutQuotes(0) == '"' || stringWithoutQuotes(0) == '\'') && stringWithoutQuotes(0) != stringWithoutQuotes(stringWithoutQuotes.getLength() -1)) || ((stringWithoutQuotes(stringWithoutQuotes.getLength() -1) == '"' || stringWithoutQuotes(stringWithoutQuotes.getLength() -1) == '\'') && stringWithoutQuotes(0) != stringWithoutQuotes(stringWithoutQuotes.getLength() -1))) {
-            // ERROR: "UNEXPECTED TOKEN" or "UNCOMPLATE QUOTATION"
-            // Console.print("\t%s%s%s UNEXPECTED TOKEN %s\t\n", Console.Style.BG_RED, Console.Style.FG_WHITE, Console.Style.BLINK, Console.Style.RESET)
-            return false
-        }
-
-        return false;
-    }
-
-    func removeQuotes(stringWithQuotes: String): String {
-        if this.hasQuotes(stringWithQuotes) {
-            stringWithQuotes = stringWithQuotes.slice(1, stringWithQuotes.getLength() - 2);
-        }
-
-        return stringWithQuotes;
-    }
-
-    func removeQuotes(stringWithQuotes: ptr[array[Char]]): String {
-        def str: String = stringWithQuotes;
-        return this.removeQuotes(str);
-    }
-
-    func isObject(): bool {
-        if this.jsonString.getLength() != 0
-        if this.jsonString(0) == '{' && this.jsonString(this.jsonString.getLength() -1) == '}'
-        return true;
-        return false;
-    }
-
-    func isArray(): bool {
-        if this.jsonString.getLength() != 0
-        if this.jsonString(0) == '[' && this.jsonString(this.jsonString.getLength() -1) == ']'
-        return true;
-        return false;
-    }
-
-    func getLength(): Int {
-        return this.valuesArray.getLength();
-    }
-
-    func get(key: ptr[array[Char]]): String {
-        def result: String;
-
-        def index: int = 0;
-        for, index < this.keysArray.getLength(), index++ {
-            if this.keysArray(index) == key {
-                result = this.valuesArray(index);
+        def start: ArchInt = 0;
+        def i: ArchInt;
+        for i = 0, not isAtEnd(str~cnt(i), stackLen, separator != ':'), ++i {
+            if str~cnt(i) == '\\' {
+                ++i;
+                continue;
+            }
+            def opInd: Int;
+            if stackLen > 0 and str~cnt(i) == stack(stackLen - 1) {
+                --stackLen;
+            } else if stackLen == 0 or stack(stackLen - 1) != '"' {
+                for opInd = 0, opInd < skipOperators.getLength(), opInd++ {
+                    if str~cnt(i) == skipOperators(opInd) {
+                        stack(stackLen++) = skipOperatorsClose(opInd);
+                        // Break if we reach the stack limit to avoid memory violation. This will only happen if the
+                        // JSON file is 500 levels deep, which wouldn't happen in any practical situation.
+                        if stackLen == 500 break 2;
+                    }
+                }
             }
         }
 
+        return i;
+    };
+
+    func isAtEnd(c: Char, stackSize: Int, acceptColon: Bool): Bool {
+        if c == 0 return true;
+        return stackSize == 0 and (c == '}' or c == ']' or c == ',' or (c == ':' and not acceptColon));
+    }
+
+    func isSpace(c: Char): Bool {
+        return c == ' ' or c == '\n' or c == '\t' or c == '\r'
+    }
+
+    func parseString(input: CharsPtr, len: ArchInt): String {
+        def result: StringBuilder(len, (len + 1) / 2);
+        def inStr: Bool = false;
+        def i: ArchInt;
+        for i = 0, i < len, ++i {
+            if inStr {
+                if input~cnt(i) == '"' break;
+                if input~cnt(i) == '\\' {
+                    ++i;
+                    if input~cnt(i) == 'n' result += '\n'
+                    else if input~cnt(i) == 'r' result += '\r'
+                    else if input~cnt(i) == 't' result += '\t'
+                    else result += input~cnt(i);
+                } else {
+                    result += input~cnt(i);
+                }
+            } else {
+                if input~cnt(i) == '"' inStr = true;
+            }
+        }
         return result;
     }
 
-    func get(index: Int): String {
-        def result: String = this.valuesArray(index);
+    handler this.getLength(): Int {
+        return this.values.getLength();
+    }
+
+    handler this.getKey(i: Int): String {
+        if i < 0 or i >= this.keys.getLength() return String();
+        return this.keys(i);
+    }
+
+    handler this(key: CharsPtr): ref[Json] {
+        @shared def empty: Json;
+        def i: Int;
+        for i = 0, i < this.keys.getLength(), ++i {
+            if this.keys(i) == key {
+                return this.values(i);
+            }
+        }
+        return empty;
+    }
+
+    handler this(i: Int): ref[Json] {
+        return this.values(i);
+    }
+
+    func _castArrayOfNullable [T: type] (json: ref[Json]): Array[Nullable[T]] {
+        if not json.isArray() return Array[Nullable[T]]();
+
+        def result : Array[Nullable[T]];
+        def i : Int;
+
+        for i = 0, i < json.values.getLength(), ++i {
+            result.add(json(i)~cast[Nullable[T]]);
+        }
         return result;
     }
 
-    func getString(key: ptr[array[Char]]): String {
-        def str: String = this.get(key);
-        return this.removeQuotes(str);
+    func _castMapOfNullable [T: type] (json: ref[Json]): Map[String, Nullable[T]] {
+        if not json.isObject() return Map[String, Nullable[T]]();
+
+        def result : Map[String, Nullable[T]];
+        def i : Int;
+
+        for i = 0, i < json.keys.getLength(), ++i {
+            result.set(json.keys(i), json.values(i)~cast[Nullable[T]]);
+        }
+        return result;
     }
 
-    func getString(index: Int): String {
-        def str: String = this.get(index);
-        return this.removeQuotes(str);
+    func _castMapOfArrayNullable [T: type] (json: ref[Json]): Map[String, Array[Nullable[T]]] {
+        if not json.isObject() return Map[String, Array[Nullable[T]]]();
+
+        def result : Map[String, Array[Nullable[T]]];
+        def i : Int;
+
+        for i = 0, i < json.keys.getLength(), ++i {
+            result.set(json.keys(i), json.values(i)~cast[Array[Nullable[T]]]);
+        }
+        return result;
     }
 
-    func getObject(key: ptr[array[Char]]): Json {
-        def obj: Json = this.get(key);
-        return obj;
+    func _castArrayOfMapNullable [T: type] (json: ref[Json]): Array[Map[String, Nullable[T]]] {
+        if not json.isArray() return Array[Map[String, Nullable[T]]]();
+
+        def result : Array[Map[String, Nullable[T]]];
+        def i : Int;
+
+        for i = 0, i < json.values.getLength(), ++i {
+            result.add(json(i)~cast[Map[String, Nullable[T]]]);
+        }
+        return result;
     }
 
-    func getObject(index: Int): Json {
-        def obj: Json = this.get(index);
-        return obj;
+    handler this~cast[Array[Nullable[String]]] { return Json._castArrayOfNullable[String](this); }
+    handler this~cast[Array[Nullable[Int[64]]]] { return Json._castArrayOfNullable[Int[64]](this); }
+    handler this~cast[Array[Nullable[Int[32]]]] { return Json._castArrayOfNullable[Int[32]](this); }
+    handler this~cast[Array[Nullable[Float[64]]]] { return Json._castArrayOfNullable[Float[64]](this); }
+    handler this~cast[Array[Nullable[Float[32]]]] { return Json._castArrayOfNullable[Float[32]](this); }
+    handler this~cast[Array[Nullable[Bool]]] { return Json._castArrayOfNullable[Bool](this); }
+
+    handler this~cast[Map[String, Nullable[String]]] { return Json._castMapOfNullable[String](this); }
+    handler this~cast[Map[String, Nullable[Int[64]]]] { return Json._castMapOfNullable[Int[64]](this); }
+    handler this~cast[Map[String, Nullable[Int[32]]]] { return Json._castMapOfNullable[Int[32]](this); }
+    handler this~cast[Map[String, Nullable[Float[64]]]] { return Json._castMapOfNullable[Float[64]](this); }
+    handler this~cast[Map[String, Nullable[Float[32]]]] { return Json._castMapOfNullable[Float[32]](this); }
+    handler this~cast[Map[String, Nullable[Bool]]] { return Json._castMapOfNullable[Bool](this); }
+
+    handler this~cast[Map[String, Array[Nullable[String]]]] { return Json._castMapOfArrayNullable[String](this); }
+    handler this~cast[Map[String, Array[Nullable[Int[64]]]]] { return Json._castMapOfArrayNullable[Int[64]](this); }
+    handler this~cast[Map[String, Array[Nullable[Int[32]]]]] { return Json._castMapOfArrayNullable[Int[32]](this); }
+    handler this~cast[Map[String, Array[Nullable[Float[64]]]]] { return Json._castMapOfArrayNullable[Float[64]](this); }
+    handler this~cast[Map[String, Array[Nullable[Float[32]]]]] { return Json._castMapOfArrayNullable[Float[32]](this); }
+    handler this~cast[Map[String, Array[Nullable[Bool]]]] { return Json._castMapOfArrayNullable[Bool](this); }
+
+    handler this~cast[Array[Map[String, Nullable[String]]]] { return Json._castArrayOfMapNullable[String](this); }
+    handler this~cast[Array[Map[String, Nullable[Int[64]]]]] { return Json._castArrayOfMapNullable[Int[64]](this); }
+    handler this~cast[Array[Map[String, Nullable[Int[32]]]]] { return Json._castArrayOfMapNullable[Int[32]](this); }
+    handler this~cast[Array[Map[String, Nullable[Float[64]]]]] { return Json._castArrayOfMapNullable[Float[64]](this); }
+    handler this~cast[Array[Map[String, Nullable[Float[32]]]]] { return Json._castArrayOfMapNullable[Float[32]](this); }
+    handler this~cast[Array[Map[String, Nullable[Bool]]]] { return Json._castArrayOfMapNullable[Bool](this); }
+
+    handler this~cast[Nullable[String]] {
+        if this.isNull() return Nullable[String]()
+        else return Nullable[String](parseString(this.rawValue, this.rawValue.getLength()));
     }
 
-    func getInt(key: ptr[array[Char]]): Int {
-        return String.parseInt(this.get(key));
+    handler this~cast[Nullable[Int[64]]] {
+        if this.isNull() return Nullable[Int[64]]()
+        else return Nullable[Int[64]](String.parseInt(this.rawValue));
     }
 
-    func getInt(index: Int): Int {
-        return String.parseInt(this.get(index));
+    handler this~cast[Nullable[Int[32]]] {
+        if this.isNull() return Nullable[Int[32]]()
+        else return Nullable[Int[32]](String.parseInt(this.rawValue));
     }
 
-    func getFloat(key: ptr[array[Char]]): Float {
-        return String.parseFloat(this.get(key));
+    handler this~cast[Nullable[Float[64]]] {
+        if this.isNull() return Nullable[Float[64]]()
+        else return Nullable[Float[64]](String.parseFloat(this.rawValue));
     }
 
-    func getFloat(index: Int): Float {
-        return String.parseFloat(this.get(index));
+    handler this~cast[Nullable[Float[32]]] {
+        if this.isNull() return Nullable[Float[32]]()
+        else return Nullable[Float[32]](String.parseFloat(this.rawValue));
     }
 
-    func getBool(key: ptr[array[Char]]): Bool {
-        def boolean: Bool;
-
-        if this.get(key).toLowerCase() == "true"
-            return true
-        else if this.get(key).toLowerCase() == "false"
-            return false
-        return false
+    handler this~cast[Nullable[Bool]] {
+        if this.isNull() return Nullable[Bool]()
+        else if this.rawValue == "true" return Nullable[Bool](true)
+        else return Nullable[Bool](false);
     }
 
-    func getBool(index: Int): Bool {
-        def boolean: Bool;
-
-        if this.get(index).toLowerCase() == "true"
-            return true
-        else if this.get(index).toLowerCase() == "false"
-            return false
+    handler this.isNull(): Bool {
+        if this.rawValue == "null" return true
+        else return false;
     }
 
-    /* TODO: if json is valid return true or false if it isn't valid
-    func isValid(): Bool {
-        return ?
-    }*/
-
-    handler this = ptr[array[Char]] {
-        def json: String = value;
-        this~init(json);
+    handler this.isObject(): Bool {
+        return this.keys.getLength() > 0;
     }
 
-    handler this = String {
-        this~init(value);
+    handler this.isArray(): Bool {
+        return this.values.getLength() > 0 && this.keys.getLength() == 0;
     }
 
-    handler this = ref[Json] {
-        this.jsonString = value.jsonString
-        this.keysArray = value.keysArray
-        this.valuesArray = value.valuesArray
+    function escape(str: CharsPtr): String {
+        def length: ArchInt = 0;
+        def i: ArchInt = 0;
+        while str~cnt(i) != 0 {
+            if str~cnt(i) == '\n'
+            or str~cnt(i) == '\r'
+            or str~cnt(i) == '\t'
+            or str~cnt(i) == '\\'
+            or str~cnt(i) == '"' length += 2
+            else ++length;
+            ++i;
+        }
+        def res: String;
+        res.alloc(length);
+        length = 0;
+        i = 0;
+        while str~cnt(i) != 0 {
+            if str~cnt(i) == '\n' {
+                res.buf~cnt(length++) = '\\';
+                res.buf~cnt(length++) = 'n';
+            } else if str~cnt(i) == '\r' {
+                res.buf~cnt(length++) = '\\';
+                res.buf~cnt(length++) = 'r';
+            } else if str~cnt(i) == '\t' {
+                res.buf~cnt(length++) = '\\';
+                res.buf~cnt(length++) = 't';
+            } else if str~cnt(i) == '\\' {
+                res.buf~cnt(length++) = '\\';
+                res.buf~cnt(length++) = '\\';
+            } else if str~cnt(i) == '"' {
+                res.buf~cnt(length++) = '\\';
+                res.buf~cnt(length++) = '"';
+            } else {
+                res.buf~cnt(length++) = str~cnt(i);
+            }
+            ++i;
+        }
+        res.buf~cnt(length++) = 0;
+        return res;
+    }    
+    
+    func stringfy [T : type] (obj : ref[T]): String {
+        def sb : StringBuilder[JsonStringBuilderMixin](256, 256);
+        sb.append('{');
+
+        preprocess {
+            _generateJsonStringify[T]()
+        }
+
+        sb.append('}');
+        return sb~cast[String];
+    }
+
+    func parse [T : type] (obj : ref[T] , str: CharsPtr) {
+        def json : Json(str);
+        preprocess {
+            def vars: Array[ref[Core.Basic.TiObject]] = Spp.astMgr.getClassVars(T~ast);
+            def i : Int;
+            for i = 0, i < vars.getLength(), ++i {
+                def fieldName: String = Spp.astMgr.getDefinitionName(vars(i));
+                Spp.astMgr.insertAst(
+                    (ast {
+                        obj.fieldIdent = json(key);
+                    }),
+                    Map[Srl.String, ref[Core.Basic.TiObject]]()
+                        .set(String("fieldIdent"), Core.Data.Ast.Identifier(fieldName))
+                        .set(String("key"), Core.Data.Ast.StringLiteral(fieldName))
+                )
+            }
+        }
+    }
+}
+
+import "ast_helpers.alusus";
+
+def JsonStringBuilderMixin: {
+    @format["jpc"]
+    handler this.formatJsonCharsPtr(str: ptr[Char]) {
+        this.append('"');
+        while str~cnt != 0 {
+            // For optimization purposes, we'll batch all non-escaped characters in a single append
+            // operation.
+            def c: Char;
+            def len: ArchInt = 0;
+            while 1 {
+                c = (str + len)~cnt;
+                if c == '\n' or c == '\r' or c == '\t' or c == '\\' or c == '"' or c == 0 break;
+                ++len;
+            }
+            if len > 0 {
+                this.append(str~cast[CharsPtr], len);
+                str = str + len;
+            }
+            if c == 0 break;
+
+            if c == '\n' {
+                this.append("\\n");
+            } else if c == '\r' {
+                this.append("\\r");
+            } else if c == '\t' {
+                this.append("\\t");
+            } else if c == '\\' {
+                this.append("\\\\");
+            } else if c == '"' {
+                this.append("\\\"");
+            }
+            str = str + 1;
+        }
+        this.append('"');
+    }
+
+    @format["js"]
+    handler this.formatJsonString(str: String) {
+        this.formatJsonCharsPtr(str.buf);
+    }
+
+    @format["jns"]
+    handler this.formatJsonNullableString(str: Nullable[String]) {
+        if str.isNull this.append("null")
+        else this.formatJsonCharsPtr(str.buf);
+    }
+    
+    handler this.appendJsonValue(v: ptr[Char]) {
+        if v == 0 this.append("null")
+        else this.formatJsonCharsPtr(v);
+    }
+
+    handler this.appendJsonValue(v: Nullable[String]) {
+        if v.isNull this.append("null")
+        else this.appendJsonValue(v.value);
+    }
+
+    handler this.appendJsonValue(v: Nullable[Int[32]]) {
+        if v.isNull this.append("null")
+        else this.append(v.value);
+    }
+
+    handler this.appendJsonValue(v: Nullable[Int[64]]) {
+        if v.isNull this.append("null")
+        else this.append(v.value);
+    }
+
+    handler this.appendJsonValue(v: Nullable[Float[32]]) {
+        if v.isNull this.append("null")
+        else this.append(v.value);
+    }
+
+    handler this.appendJsonValue(v: Nullable[Float[64]]) {
+        if v.isNull this.append("null")
+        else this.append(v.value);
+    }
+
+    handler this.appendJsonValue(v: Nullable[Bool]) {
+        if v.isNull this.append("null")
+        else if v.value this.append("true")
+        else this.append("false");
+    }
+    
+    func appendJsonArray [T: type] (sb: ref[StringBuilder[JsonStringBuilderMixin]], arr: ref[Array[T]]) {
+        sb.append('[');
+        def i: Int;
+        for i = 0, i < arr.getLength(), ++i {
+            if i > 0 sb.append(',');
+            sb.appendJsonValue(arr(i));
+        }
+        sb.append(']');
+    }
+
+    func appendJsonMap [T2: type] (sb: ref[StringBuilder[JsonStringBuilderMixin]], m: ref[Map[String, T2]]) {
+        sb.append('{');
+        def i: Int;
+        for i = 0, i < m.getLength(), ++i {
+            if i > 0 sb.append(',');
+            sb.appendJsonValue(m.keyAt(i));
+            sb.append(':');
+            sb.appendJsonValue(m.valAt(i));
+        }
+        sb.append('}');
+    }
+
+    handler this.appendJsonValue(v: Array[Nullable[String]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Nullable[String]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Nullable[Bool]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Nullable[Bool]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Nullable[Int[32]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Nullable[Int[32]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Nullable[Int[64]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Nullable[Int[64]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Nullable[Float[32]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Nullable[Float[32]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Nullable[Float[64]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Nullable[Float[64]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Nullable[String]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Nullable[String]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Nullable[Bool]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Nullable[Bool]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Nullable[Int[32]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Nullable[Int[32]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Nullable[Int[64]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Nullable[Int[64]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Nullable[Float[32]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Nullable[Float[32]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Nullable[Float[64]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Nullable[Float[64]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Array[Nullable[String]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Array[Nullable[String]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Array[Nullable[Bool]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Array[Nullable[Bool]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Array[Nullable[Int[32]]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Array[Nullable[Int[32]]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Array[Nullable[Int[64]]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Array[Nullable[Int[64]]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Array[Nullable[Float[32]]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Array[Nullable[Float[32]]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Map[String, Array[Nullable[Float[64]]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonMap[Array[Nullable[Float[64]]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Map[String, Nullable[String]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Map[String, Nullable[String]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Map[String, Nullable[Bool]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Map[String, Nullable[Bool]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Map[String, Nullable[Int[32]]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Map[String, Nullable[Int[32]]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Map[String, Nullable[Int[64]]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Map[String, Nullable[Int[64]]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Map[String, Nullable[Float[32]]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Map[String, Nullable[Float[32]]]](this, v);
+    }
+
+    handler this.appendJsonValue(v: Array[Map[String, Nullable[Float[64]]]]) {
+        StringBuilder[JsonStringBuilderMixin].appendJsonArray[Map[String, Nullable[Float[64]]]](this, v);
     }
 }

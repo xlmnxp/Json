@@ -1,0 +1,20 @@
+import "Srl/Console";
+import "Srl/StringBuilder";
+import "Srl/Nullable";
+import "Apm";
+Apm.importPackage("Alusus/Json@0.2");
+use Srl;
+
+func testJsonStringBuilderMixin {
+    def stringBuilder: StringBuilder[JsonStringBuilderMixin](512, 512);
+    def stringVal: String("test\"quotes'");
+    def charsPtrVal: CharsPtr("test\"quotes'");
+    def nullableVal: Nullable[String]("test\"quotes'");
+    def nullVal: Nullable[String];
+    stringBuilder.format(
+        "{ \"name\": %js, \"value\": %jpc, \"nullable\": %jns, \"null\": %jns }",
+        stringVal, charsPtrVal, nullableVal, nullVal
+    );
+    Console.print("%s\n", stringBuilder~cast[String].buf);
+}
+testJsonStringBuilderMixin();

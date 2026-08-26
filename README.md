@@ -1,102 +1,223 @@
 # Json
-Json Deserializer for Alusus Language
 
-# How to Import
+[[عربي]](README.ar.md)
+
+A JSON library for Alusus Language. It supports reading and extracting information from JSON, serializing
+objects to JSON, and parsing JSON directly into typed objects.
+
+## Adding to the Project
+
+You can add it to the project using APM:
+
+```
+import "Apm";
+Apm.importPackage("Alusus/Json@0.2");
+```
+
+## Example
+
 ```
 import "Srl/Console.alusus"
-import "Apm.alusus"
-Apm.importFile("xlmnxp/Json");
+import "Apm";
+Apm.importPackage("Alusus/Json@0.2");
 
-def jsonObject: Json = "{\"glossary\": {\"title\": \"example glossary\",\"GlossDiv\": {\"title\": \"S\", \"GlossList\": {\"GlossEntry\": {\"ID\": \"SGML\",	\"SortAs\": \"SGML\", \"GlossTerm\": \"Standard Generalized Markup Language\", \"Acronym\": \"SGML\", \"Abbrev\": \"ISO 8879:1986\", \"GlossDef\": {\"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\"GlossSeeAlso\": [\"GML\", \"XML\"]}, \"GlossSee\": \"markup\"}}}}}";
-Srl.Console.print(jsonObject.getObject("glossary").getObject("GlossDiv").getObject("GlossList").getObject("GlossEntry").getObject("GlossDef").getObject("GlossSeeAlso").getString(1)); // output: XML
-```
+use Srl
+func start {
+    // define a variable with type Json to hold the information we want.
+    def obj: Json = "{\n\t\"id\": 1,\n\t\"classes\": [\"c1\", \"c2\", \"c3\"],\n\t\"passed\": true\n}"
 
-# Handlers
-- Json~**init(str: ptr[Array[Char]])**<br>
-```
-initialize Type with parse JSON from String
-```
+    // get the value stored under the key `id` as integer variable.
+    def id: int = obj("id");
+    Console.print("id is %d\n", id);
 
-# Methods
-- Json.**get(key: ptr[Array[Char]])**: String<br>
-```
-return value of key as String with Quotations
-```
-- Json.**get(key: Int)**: String<br>
-```
-return value of index as String with Quotations
-```
+    // check if the value stored under the key `classes` is an array.
+    def classesObj: Json = obj("classes");
+    if (classesObj.isArray()) {
+        Console.print("Array\n");
+    }
+    else {
+        Console.print("Not array\n");
+    }
 
-- Json.**getString(key: ptr[Array[Char]])**: String<br>
-```
-return value of key as String without Quotations
-```
-- Json.**getString(key: Int)**: String<br>
-```
-return value of index as String without Quotations
-```
+    // get the value stored under the key `passed` as boolean variable
+    def passed: Bool = obj("passed");
+    // check if the student passed the exam or not.
+    if (passed) {
+        Console.print("passed\n");
+    }
+    else {
+        Console.print("failed\n");
+    }
 
-- Json.**getInt(key: ptr[Array[Char]])**: Int<br>
-```
-return value of key as Int
-```
-- Json.**getInt(key: Int)**: Int<br>
-```
-return value of index as Int
+}
+start();
 ```
 
-- Json.**getFloat(key: ptr[Array[Char]])**: Float<br>
+## Json class
+
+### Member Variables
+
 ```
-return value of key as Float
-```
-- Json.**getFloat(key: Int)**: Float<br>
-```
-return value of index as Float
+class Json {
+    def keys: Array[String];
+    def values: Array[Json];
+    def rawValue: String;
+}
 ```
 
-- Json.**getBool(key: ptr[Array[Char]])**: Bool<br>
+`keys`: keys of the JSON if it's an object.
+
+`values`: values of the JSON if it's an array or an object.
+
+`rawValue`: raw value (unparsed) if the JSON is neither an object nor an array.
+
+### Initialization
+
+We can initialize this class using many methods:
+
 ```
-return value of key as Boolean
+handler this~init()
 ```
-- Json.**getBool(key: Int)**: Bool<br>
+default initialization without parameters.
+
 ```
-return value of index as Boolean
+handler this~init(str: ptr[array[Char]])
+```
+initialization from an array of char.
+
+```
+handler this~init(json: ref[Json])
+```
+initialization from another object of the class, copy initialization.
+
+### isObject
+
+```
+handler this.isObject(): bool;
+```
+Checks if the JSON is an object.
+
+### isArray
+
+```
+handler this.isArray(): bool;
+```
+Checks if the JSON is an array or not.
+
+### getLength
+
+```
+handler this.getLength(): Int;
+```
+Get the number of values in the JSON. This will return a positive number if the JSON is an object
+or an array.
+
+### getKey
+
+```
+handler this.getKey(index: Int): String;
+```
+Returns the key at at the specified index if the JSON is an object. Returns an empty string if
+the JSON is not an object or the index is out of range.
+
+### stringfy
+
+```
+func stringfy [T: type] (obj: ref[T]): String;
 ```
 
-- Json.**getObject(key: ptr[Array[Char]])**: Json<br>
+Serializes an object's fields to a JSON string. Supported field types are `Nullable[T]`,
+`Array[Nullable[T]]`, `Map[String, Nullable[T]]`, `Map[String, Array[Nullable[T]]]`, and
+`Array[Map[String, Nullable[T]]]`, where `T` is `String`, `Bool`, `Int[32]`, `Int[64]`, `Float[32]`,
+or `Float[64]`. An unset `Nullable` value is serialized as `null`.
+
 ```
-return value of key as new Json
-```
-- Json.**getObject(key: Int)**: Json<br>
-```
-return value of index as new Json
+class Person {
+    def name: Nullable[String];
+    def tags: Array[Nullable[String]];
+}
+
+def person: Person();
+person.name = Nullable[String](String("Sarmed"));
+person.tags.add(Nullable[String](String("admin")));
+
+Console.print("%s\n", Json.stringfy[Person](person).buf);
+// Output: {"name":"Sarmed","tags":["admin"]}
 ```
 
-- Json.**isObject()**: Bool<br>
+### parse
+
 ```
-return true only when json is Object
-```
-- Json.**isArray()**: Bool<br>
-```
-return true only when json is Array
-```
-- Json.**getLength()**: Int<br>
-```
-return length of Children 
+func parse [T: type] (obj: ref[T], str: CharsPtr);
 ```
 
-- Json.**hasQuotes(stringWithQuotes: String)**: Bool<br>
+Populates an existing object's fields from a JSON string, matching each JSON key against the
+object's field names. Supports the same field types as `stringfy`.
 
-# Operators
-- **this** = **ptr[array[Char]]**]
 ```
-def jsonObject: Json = "{lang: 'alusus'}"
-```
-- **this** = **String**
-```
-def str: String = "{lang: 'alusus'}"
-def jsonObject: Json = str
+def person: Person();
+Json.parse[Person](person, "{\"name\": \"Sarmed\", \"tags\": [\"admin\"]}");
+Console.print("%s\n", person.name.value.buf);
+// Output: Sarmed
 ```
 
-# LICENSE
-MIT LICENSE.
+## JsonStringBuilderMixin
+
+The `JsonStringBuilderMixin` is a mixin that can be used with `StringBuilder` to provide JSON string
+formatting capabilities. It automatically escapes special characters in strings when building JSON output.
+
+### Usage
+
+```
+import "Srl/StringBuilder";
+import "Apm";
+Apm.importPackage("Alusus/Json@0.2");
+use Srl;
+
+def stringBuilder: StringBuilder[JsonStringBuilderMixin](512, 512);
+```
+
+### Format Specifiers
+
+The mixin provides special format specifiers for the `format` method:
+
+- `%js` - Format a `String` value with proper JSON escaping (escapes quotes, backslashes, etc.)
+- `%jpc` - Format a `CharsPtr` value with proper JSON escaping
+- `%jns` - Format a `Nullable[String]` value, writing `null` if it has no value, otherwise applying the same JSON escaping as `%js`
+
+### Example
+
+```
+import "Srl/Console";
+import "Srl/StringBuilder";
+import "Srl/Nullable";
+import "Apm";
+Apm.importPackage("Alusus/Json@0.2");
+use Srl;
+
+func testJsonStringBuilderMixin {
+    def stringBuilder: StringBuilder[JsonStringBuilderMixin](512, 512);
+    def stringVal: String("test\"quotes'");
+    def charsPtrVal: CharsPtr("test\"quotes'");
+    def nullableVal: Nullable[String]("test\"quotes'");
+    def nullVal: Nullable[String];
+    stringBuilder.format(
+        "{ \"name\": %js, \"value\": %jpc, \"nullable\": %jns, \"null\": %jns }",
+        stringVal, charsPtrVal, nullableVal, nullVal
+    );
+    Console.print("%s\n", stringBuilder~cast[String].buf);
+}
+testJsonStringBuilderMixin();
+```
+
+Output:
+```
+{ "name": "test\"quotes'", "value": "test\"quotes'", "nullable": "test\"quotes'", "null": null }
+```
+
+---
+
+## License
+
+This project is licensed under the MIT license. See the `LICENSE` file for details.
+

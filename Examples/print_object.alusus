@@ -1,0 +1,13 @@
+import "Srl/Console.alusus";
+import "Apm";
+Apm.importPackage("Alusus/Json@0.2");
+
+use Srl
+func start {
+    def obj: Json = "{\n\t\"success\": true ,\n\t\"time\": \"2020-01-14T17ZT\",\n\t\"hostname\": \"localhost\"\n}"
+
+    Console.print("key: %s \t\t\t value: %s\n", obj.keys(0).buf, CharsPtr().{ if obj(0) this = "true" else this = "false" });
+    Console.print("key: %s \t\t\t value: %s\n", obj.keys(1).buf, obj(1)~cast[String].buf);
+    Console.print("key: %s \t\t\t value: %s\n", obj.keys(2).buf, obj(2)~cast[String].buf);
+}
+start();

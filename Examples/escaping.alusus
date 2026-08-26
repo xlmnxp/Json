@@ -1,0 +1,20 @@
+import "Srl/Console.alusus";
+import "Apm";
+Apm.importPackage("Alusus/Json@0.2");
+
+use Srl;
+func testJsonWithEscapeChars {
+    def obj: Json = "{\"i\":{\"j\":\"a\\\"b,c]\"}}";
+    Console.print("%s\n", obj("i")("j")~cast[String].buf);
+    obj = "{\"key{with\\\"\": \"abc\"}";
+    Console.print("%s\n", obj("key{with\"")~cast[String].buf);
+}
+testJsonWithEscapeChars();
+
+function testEscape{
+    Console.print("one\ntwo\tthree\\four\"five");
+    Console.print("\n");
+    Console.print(Json.escape("one\ntwo\tthree\\four\"five"));
+    Console.print("\n");
+}
+testEscape();

@@ -1,0 +1,60 @@
+>>>>>> escaping.alusus
+
+a"b,c]
+abc
+one
+two	three\four"five
+one\ntwo\tthree\\four\"five
+
+
+
+>>>>>> print_object.alusus
+
+key: success 			 value: true
+key: time 			 value: 2020-01-14T17ZT
+key: hostname 			 value: localhost
+
+
+
+>>>>>> seek_nested.alusus
+
+XML
+3
+
+
+>>>>>> json_string_builder.alusus
+
+{ "name": "test\"quotes'", "value": "test\"quotes'", "nullable": "test\"quotes'", "null": null }
+
+
+
+>>>>>> اطبع_كائن.أسس
+
+key: success 			 value: true
+key: time 			 value: 2020-01-14T17ZT
+key: hostname 			 value: localhost
+
+
+
+>>>>>> وصول_عميق.أسس
+
+XML
+3
+
+
+>>>>>> ترميز.أسس
+
+ا"ب،ت,ث[]
+ابت
+واحد
+اثنان	ثلاثة\أربعة"خمسة
+واحد\nاثنان\tثلاثة\\أربعة\"خمسة
+
+
+
+>>>>>> منشئ_نص_جيسون.أسس
+
+{ "الاسم": "اختبار\"اقتباس'", "القيمة": "اختبار\"اقتباس'", "قابلة_للعدم": "اختبار\"اقتباس'", "عدم": null }
+
+
+

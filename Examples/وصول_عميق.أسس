@@ -1,0 +1,13 @@
+اشمل "مـتم/طـرفية.أسس"؛
+اشمل "مـتم/نـص.أسس"؛
+اشمل "مـحا"؛
+مـحا.اشمل_حزمة("Alusus/Json@0.2"، "جـيسون.أسس")؛
+
+عرف كائن_جيسون: جـيسون = "{\"glossary\": {\"title\": \"example glossary\",\"GlossDiv\": {\"title\": \"S\", \"GlossList\": {\"GlossEntry\": {\"ID\": \"SGML\",	\"SortAs\": \"SGML\", \"GlossTerm\": \"Standard Generalized Markup Language\", \"Acronym\": \"SGML\", \"Abbrev\": \"ISO 8879:1986\", \"GlossDef\": {\"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\"GlossSeeAlso\": [\"GML\", \"XML\\n\"]}, \"GlossSee\": \"markup\"}}}}}";
+
+مـتم.طـرفية.اطبع(
+    كائن_جيسون("glossary")("GlossDiv")("GlossList")("GlossEntry")("GlossDef")("GlossSeeAlso")(1)~مثل[مـتم.نـص]
+)؛ // نتيجة: XML
+
+كائن_جيسون = "{\"cbId\":3,\"recurring\":true,\"eventName\":\"timer\",\"eventData\":{}}"؛
+مـتم.طـرفية.اطبع(كائن_جيسون("cbId")~مثل[صـحيح])؛
